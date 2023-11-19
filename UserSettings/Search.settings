@@ -1,0 +1,93 @@
+trackSelection = true
+refreshSearchWindowsInPlayMode = false
+fetchPreview = true
+defaultFlags = 0
+keepOpen = false
+queryFolder = "Assets"
+onBoardingDoNotAskAgain = true
+showPackageIndexes = false
+showStatusBar = false
+scopes = {
+	"last_search.3619CCAF" = ""
+	"OpenInspectorPreview.3619CCAF" = "0"
+	"currentGroup.3619CCAF" = "all"
+	"last_search.EAB0C2BA" = "Addressables"
+	"OpenInspectorPreview.EAB0C2BA" = "0"
+	"currentGroup.EAB0C2BA" = "store"
+	"last_search.45C55C1A" = "title"
+	"OpenInspectorPreview.45C55C1A" = "0"
+	"currentGroup.45C55C1A" = "asset"
+	"picker_window_position_offset.0B486DF2" = "-64;32;320;550"
+	"picker_search_text.0B486DF2" = ""
+	"last_search.0B486DF2" = ""
+	"OpenInspectorPreview.0B486DF2" = "0"
+	"currentGroup.0B486DF2" = null
+}
+providers = {
+	adb = {
+		active = false
+		priority = 2500
+		defaultAction = null
+	}
+	asset = {
+		active = true
+		priority = 25
+		defaultAction = null
+	}
+	store = {
+		active = true
+		priority = 100
+		defaultAction = null
+	}
+	find = {
+		active = true
+		priority = 25
+		defaultAction = null
+	}
+	log = {
+		active = false
+		priority = 210
+		defaultAction = null
+	}
+	packages = {
+		active = true
+		priority = 90
+		defaultAction = null
+	}
+	performance = {
+		active = false
+		priority = 100
+		defaultAction = null
+	}
+	scene = {
+		active = true
+		priority = 50
+		defaultAction = null
+	}
+	profilermarkers = {
+		active = false
+		priority = 100
+		defaultAction = null
+	}
+	presets_provider = {
+		active = false
+		priority = -10
+		defaultAction = null
+	}
+}
+objectSelectors = {
+}
+recentSearches = [
+]
+searchItemFavorites = [
+]
+savedSearchesSortOrder = 0
+showSavedSearchPanel = true
+hideTabs = false
+expandedQueries = [-1765347274]
+queryBuilder = false
+ignoredProperties = "id;name;classname;imagecontentshash"
+helperWidgetCurrentArea = "all"
+disabledIndexers = ""
+minIndexVariations = 2
+findProviderIndexHelper = true
