@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Enemy
+  - door
+  - live2d
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - karryn
+  - Water
+  - UI
+  - 'Post '
+  - Enemy
+  - Npc
+  - BG
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - live2d
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: PostLayer
+    uniqueID: 2732335115
+    locked: 0
+  - name: Floor
+    uniqueID: 1894597357
+    locked: 0
+  - name: Npc
+    uniqueID: 123214887
+    locked: 0
+  - name: Enemy
+    uniqueID: 2647149161
+    locked: 0
+  - name: Player
+    uniqueID: 828623025
+    locked: 0
+  - name: live2D
+    uniqueID: 1464744819
+    locked: 0
