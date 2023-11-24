@@ -111,7 +111,7 @@ public class BattleManager : Singleton<BattleManager>
     //委托
     public delegate void onEnemyAtk();
 
-    public event onEnemyAtk enemyAtkEvent;
+    public event onEnemyAtk EnemyAtkEvent;
 
     private int maxScrollOffset = 1; // 添加这一行来初始化最大滚动偏移量
 
@@ -162,26 +162,10 @@ public class BattleManager : Singleton<BattleManager>
         mainPanel1 = new List<GameObject>();
         mainPanel2 = new List<GameObject>();
 
-        Character.onTaskBegin += switchKarrynIcon1;
-        Character.onTaskCompleted += switchKarrynIcon2;
-        Character.onEnemyDie += removeEnemyFromList;
+        Character.onTaskBegin += SwitchKarrynIcon1;
+        Character.onTaskCompleted += SwitchKarrynIcon2;
+        Character.onEnemyDie += RemoveEnemyFromList;
     }
-
-    public void useKeyboardOperationMainButton(GameObject curObj)    //表示按钮或者面板 //---后续将该段代码移动至BCM脚本---(ButtonCommandManager)斟酌考虑移动//
-    {
-        if (curObj.transform.parent.name == "Battle Skill Panel 1")
-        {
-            corSwitchOtherButton = StartCoroutine(switchOtherButton(mainPanel1));
-            corIconScale = StartCoroutine(iconScale(mainPanel1[0]));
-        }
-        //从Atk Skill Panel 可以回退到 2号技能面板
-        else if (curObj.transform.parent.name == "Battle Skill Panel 2" || curObj.transform.parent.name == "Atk Skill Panel")
-        {
-            corSwitchOtherButton = StartCoroutine(switchOtherButton(mainPanel2));
-            corIconScale = StartCoroutine(iconScale(mainPanel2[0]));
-        }
-    }
-
 
     public IEnumerator PlayerRound()  //***等待玩家进行面板操作后判断是否符合条件进行协程的停止和继续运行***//
     {
@@ -209,7 +193,7 @@ public class BattleManager : Singleton<BattleManager>
 
 
     //回调
-    private void switchKarrynIcon1()
+    private void SwitchKarrynIcon1()
     {
         AudioManager.instance.playCustomAudio(Global.SoundType.Daji);
         childrenDic["Karryn"][(int)playerCurState].gameObject.SetActive(false);
@@ -218,7 +202,7 @@ public class BattleManager : Singleton<BattleManager>
     }
 
     //回调
-    private void switchKarrynIcon2()
+    private void SwitchKarrynIcon2()
     {
         childrenDic["Karryn"][(int)playerCurState].gameObject.SetActive(false);
         playerCurState = KarrynState.Weapon1;
@@ -230,7 +214,7 @@ public class BattleManager : Singleton<BattleManager>
     }
 
     //回调
-    private void removeEnemyFromList()
+    private void RemoveEnemyFromList()
     {
         prefabs[BattleManager.instance.index].SetActive(false);
 
@@ -260,29 +244,7 @@ public class BattleManager : Singleton<BattleManager>
 
     }
 
-    private void LoadToDictionary(Dictionary<string, Animator> dic, Animator[] animations) //移动至BCM脚本-(ButtonCommandManager)
-    {
-        // 遍历所有的动画，将它们添加到字典中
-        foreach (Animator animation in animations)
-        {
-            string objectName = animation.gameObject.name;
-            //Debug.Log(objectName);
-            // 检测并添加 cursorName
-            if (objectName.EndsWith(" cursor"))
-            {
-                string panelName = objectName.Replace(" cursor", "");
-                dic.Add(panelName + " cursor", animation);
-                // Debug.Log(objectName);
-            }
-            // 检测并添加 focusName
-            else if (objectName.EndsWith(" focus"))
-            {
-                string panelName = objectName.Replace(" focus", "");
-                dic.Add(panelName + " focus", animation);
-                // Debug.Log(objectName);
-            }
-        }
-    }
+  
 
     public void loadResource()
     {
@@ -314,9 +276,465 @@ public class BattleManager : Singleton<BattleManager>
 
         foreach (var button in buttons)
         {
-            button.onClick.AddListener(() => { buttonClicked(button.gameObject); });
+            button.onClick.AddListener(() => { ButtonClicked(button.gameObject); });
         }
         StartCoroutine(BattleLoop());
+    }
+
+    private void ButtonClicked(GameObject btn)
+    {
+        EventSystem.current.SetSelectedGameObject(btn);
+
+        // 获取当前被点击的按钮
+        curButton = EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.Button>();
+
+        // 禁用其他的按钮防止玩家点击其他的按钮出现 bug
+        foreach (var button in buttons)
+        {
+            if (button != curButton)
+            {
+                button.interactable = false;
+            }
+        }
+
+        // 创建对应的按钮处理器实例来处理按钮的点击事件，用命令模式避免重复写 if-else if，增加扩展性
+        if (commandManager == null)
+        {
+            /*#if UNITY_EDITOR
+            Debug.LogError("按钮命令器初始化失败，请检查!");
+            #endif*/
+        }
+        else
+        {
+            if (curButton.gameObject.name == "run")  // 检查按钮是否为“run”按钮
+            {
+                // 执行逃跑/退出逻辑
+                StartCoroutine(RunAway());
+            }
+            else
+            {
+                // 执行其他按钮的逻辑
+                commandManager.ExecuteCommand(curButton.gameObject.name);  // 执行命令（设计模式：命令模式）
+            }
+
+            // 等待处理按钮事件的逻辑执行完后，再将其他按钮启用
+            foreach (var button in buttons)
+            {
+                if (button.gameObject != curButton)
+                {
+                    button.interactable = true;
+                }
+            }
+        }
+    }
+
+    private IEnumerator RunAway()
+    {
+        Debug.Log("玩家选择逃跑！");
+
+        // 播放逃跑动画，这里假设有一个名为 "RunAwayAnimation" 的动画组件
+        // 如果有特定的逃跑动画，请将其替换为实际的动画名称
+        //animDic["Karryn"].SetTrigger("RunAwayAnimation");
+
+        // 显示逃跑提示信息，这里假设有一个名为 "RunAwayText" 的UI文本组件
+        // 如果有特定的提示信息，请将其替换为实际的文本信息
+        // 如果你的逃跑过程涉及多个步骤，你可以在此处添加适当的等待时间和过渡效果
+        //UIManager.instance.ShowText("逃跑成功！");
+
+        // 等待一段时间，模拟逃跑后的处理
+        yield return new WaitForSeconds(3f);
+
+        // 结束战斗，切换到逃跑后的场景
+        StopAllCoroutines();
+
+        // 这里可以添加切换场景的逻辑，假设有一个名为 "RunAwayScene" 的场景
+        SceneLoader.instance.loadGameScene((int)SceneEnumVal.Main1L);
+    }
+
+
+
+    public IEnumerator BattleLoop()
+    {
+        yield return StartCoroutine(PrepareRound());
+
+        while (true)
+        {
+            yield return StartCoroutine(PlayerRound());
+
+            if (CheckBattleEndCondition())
+                break;
+
+            yield return StartCoroutine(EnemyRound());
+
+            if (CheckBattleEndCondition())
+                break;
+            //将战斗技能1号面板开启,供用户操作
+            canvas.transform.GetChild((int)ChildrenType.BattleSkillPanel1).gameObject.SetActive(true);
+            yield return null;
+        }
+    }
+
+    private void Update()
+    {
+        //通过计时器限制玩家短时间内多次输入，导致结果不可预料
+        if (!isPressKey)
+        {
+            keyPressTimer += Time.deltaTime;
+            if (keyPressTimer >= keyPressInterval)
+            {
+                isPressKey = true;
+                keyPressTimer = 0;  //重置计时器时间
+            }
+        }
+        else
+        {
+            if (isPanel && isInputEnable)
+            {
+                checkUserMoveAction();
+            }
+        }
+    }
+
+    public IEnumerator PrepareRound()
+    {
+        /*#if UNITY_EDITOR
+            Debug.Log("战斗开始准备回合");
+        #endif*/
+        // 在这里处理战斗开始时的准备逻辑
+        //1.播放音乐 2.显示主角 3.敌人列表上显示敌人
+
+        if (Global.instance.battlePrevSceneName == "main1L")
+        {
+            if (!Global.instance.isSuppress)  // 未镇压
+            {
+                if (!Global.instance.isClear1L) // 一层未通关
+                {
+                    int enemySize = UnityEngine.Random.Range(1, 6); // 随机生成1到5之间的整数
+                    int[] values = { goblinIndex, goblinIndex }; // 用于测试，实际应该添加适当的敌人索引
+                                                                 // 一层 thug 和 goblin 镇压后 thug goblin guard
+                    if (Global.instance.battlePrevNpcName.Contains("goblin"))
+                    {
+                        prefabs.AddRange(SpawnRandomEnemies(enemySize, values)); // 生成指定数量的随机敌人
+                        /*#if UNITY_EDITOR
+                        Debug.Log("敌人数量是" + prefabs.Count.ToString());
+                        #endif*/
+                        SetEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400); // 设置随机敌人的属性
+                    }
+                    else if (Global.instance.battlePrevNpcName == "thug")
+                    {
+                        prefabs.AddRange(SpawnRandomEnemies(enemySize, values)); // 生成指定数量的随机敌人
+                        SetEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400); // 设置随机敌人的属性
+                    }
+                    else if (Global.instance.battlePrevNpcName == "1LBOSS")
+                    {
+                        enemySize = 3; // 指定敌人数量为3
+                        prefabs.AddRange(SpawnRandomEnemies(enemySize, values)); // 生成指定数量的随机敌人
+                        SetEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400); // 设置随机敌人的属性
+                        boss1L.GetComponent<EnemyManager>().initialize(300, 300, 300, 300, 500, 50, 1000);
+                    }
+                }
+                else
+                {
+                    // 通关后的逻辑
+                }
+            }
+            else
+            {
+                // 镇压后的逻辑
+            }
+        }
+        else if (SceneManager.GetActiveScene().name == Global.instance.mainScene2L)
+        {
+            // 处理第二层的逻辑
+        }
+        else if (SceneManager.GetActiveScene().name == Global.instance.mainScene3L)
+        {
+            // 处理第三层的逻辑
+        }
+        yield break;
+    }
+
+    private GameObject[] SpawnRandomEnemies(int enemySize, int[] enemyIndexArray)
+    {
+        GameObject[] arr = new GameObject[enemySize];
+        for (int i = 0; i < enemySize; i++)
+        {
+            int num = UnityEngine.Random.Range(0, enemyIndexArray.Length); // 使用敌人索引数组的长度来确定范围
+            arr[i] = PoolManager.instance.getObjInPool(dictionary[enemyIndexArray[num]], Global.instance.enemiesTransform[i]);
+        }
+        return arr;
+    }
+
+    private void SetEnemiesHpAndMp(ref List<GameObject> enemis_, float hp_, float mp_, float maxhp_, float maxmp_, float atk_, float def_, float sex_)
+    {
+        for (int i = 0; i < enemis_.Count; i++)
+        {
+            enemis_[i].GetComponent<EnemyManager>().initialize(hp_, mp_, maxhp_, maxmp_, atk_, def_, sex_);
+            /*#if UNITY_EDITOR
+            Debug.Log("生成的敌人是" + enemis_[i].gameObject.name + "他的索引是" + enemis_[i].GetComponent<EnemyManager>().EnemyIndex.ToString() +
+                "hp_:" + hp_.ToString() + "mp_:" + mp_.ToString() + "maxhp_:" + maxhp_.ToString() + "maxmp_:" + maxmp_.ToString() + "atk_:" +
+                atk_.ToString() + "atk_:" + atk_.ToString() + "def_:" + def_.ToString());
+            #endif*/
+        }
+    }
+
+
+    public IEnumerator EnemyRound()
+    {
+        Debug.Log("敌人回合");
+        // 1.敌人使用普通atk 或者 sex atk
+        for (int i = 0; i < prefabs.Count; i++)
+        {
+            int res = UnityEngine.Random.Range(1, 3);   //左闭右开 所以随机数是1or2 浮点型是左闭右闭
+            res = 1;
+            if (res % 2 == 0)   //使用普通atk
+            {
+                float atk = prefabs[i].GetComponent<EnemyManager>().getAtk();   //获得敌人的攻击力
+                PlayerManager.instance.takeDamage(atk);
+                yield return new WaitForSeconds(1f);  //等待血条减少
+            }
+            else    //使用sex atk
+            {
+                //播放sex动画
+                EnemyAtkEvent?.Invoke();
+
+                float sexVal = prefabs[i].GetComponent<EnemyManager>().getSexVal();
+                PlayerManager.instance.addHappyVal(40f);   //20用作测试
+                PlayerManager.instance.subtractMagic(sexVal + PlayerManager.instance.curHappyVal);  //测试
+                yield return new WaitForSeconds(2f);    //因为要等待img对象动作执行完毕，所以多等一会
+            }
+        }
+    }
+
+    private bool CheckBattleEndCondition()
+    {
+        // 在这里编写判断战斗胜利或失败的条件
+        // 如果满足胜利条件，返回true，战斗将结束
+        // 如果满足sex条件，返回true，战斗将结束
+        // 如果生命值不为0，返回false，继续进行下一回合
+        // 私有变量isBattle为真(进入胜利计分面板)为假就(进入sex计分面板)
+
+        if (PlayerManager.instance.checkFail())
+        {
+            //进入sex场景
+            ReleaseResource();
+            dontDestroy();
+            StartCoroutine(lightDissolution());
+            return true;
+        }
+        else if (prefabs.Count == 0)       //胜利敌人全部被消灭
+        {
+            Global.instance.isWin = true;
+            ReleaseResource();
+            StopAllCoroutines();
+            dontDestroy();
+            SceneLoader.instance.loadGameScene((int)SceneEnumVal.Main1L);
+            return false;
+        }
+        return false;   //即不成功也不失败
+    }
+
+    private void ReleaseResource()
+    {
+        // 清空动画字典
+        animDic.Clear();
+        // 清空子对象字典
+        childrenDic.Clear();
+        // 清空预制体列表
+        prefabs.Clear();
+        // 清空主面板1列表
+        mainPanel1.Clear();
+        // 清空主面板2列表
+        mainPanel2.Clear();
+        // 清空需要禁用的子对象列表
+        disableChildrenList.Clear();
+        // 将按钮变量设置为 null，释放引用
+        buttons = null;
+    }
+
+
+    private void dontDestroy()
+    {
+        // 将PlayerManager移回DontDestroyOnLoad场景 注意只有根对象才可以使用DontDestroyOnLoad方法
+        PlayerManager.instance.GetComponent<RectTransform>().SetParent(null, false);
+        DontDestroyOnLoad(PlayerManager.instance.gameObject);
+
+        // 将对象池管理器移回DontDestroyOnLoad场景
+        PoolManager.instance.transform.GetComponent<RectTransform>().SetParent(null, false);
+        DontDestroyOnLoad(PoolManager.instance.gameObject);
+    }
+
+    private IEnumerator WaitForPlayerInput()
+    {
+        // 假设在面板管理器中等待玩家操作的逻辑
+        yield return null;
+    }
+
+    //开始选择敌人并攻击他
+    public IEnumerator beginSelectEnemyAtk(List<GameObject> enemies, SkillType skillType)
+    {
+        yield return null;  //将协程挂起等待至下一帧，避免当前帧同时判断2次用户输入
+        index = 0;  //用户每向下移动一次，索引加1，用来定位敌人
+        total = enemies.Count; //几个敌人移动几次
+        int n = 1;  //至少出现一个敌人
+        float y = canvas.transform.GetChild((int)ChildrenType.SelectFrame).gameObject.transform.localPosition.y;
+
+        while (true)
+        {
+            //不移动选中框直接攻击当前敌人
+            atkEnemies(prefabs, skillType);
+            //撤销
+            atkCancel();
+
+            if (Input.GetKeyDown(KeyCode.S) && y >= yBottom && n < total && total > 1)
+            {
+                int dir = -1;
+                //移动选择框和光标
+                canvas.transform.GetChild((int)ChildrenType.SelectFrame).localPosition += new Vector3(0, dir * lightFrameOffset.y, 0);
+                canvas.transform.GetChild((int)ChildrenType.FrameCursor).localPosition += new Vector3(0, dir * lightFrameOffset.y, 0);
+                index++;
+                n++;
+                y = canvas.transform.GetChild((int)ChildrenType.SelectFrame).localPosition.y;
+
+                //选中敌人进行攻击，敌人减血
+                atkEnemies(prefabs, skillType);
+                //撤销攻击
+                atkCancel();
+            }
+            else if (Input.GetKeyDown(KeyCode.W) && y <= yTop && n > 1 && total > 1 && y <= yTopChanged)
+            {
+                int dir = 1;
+                canvas.transform.GetChild((int)ChildrenType.SelectFrame).localPosition += new Vector3(0, dir * lightFrameOffset.y, 0);
+                canvas.transform.GetChild((int)ChildrenType.FrameCursor).localPosition += new Vector3(0, dir * lightFrameOffset.y, 0);
+                index--;
+                n--;
+                y = canvas.transform.GetChild((int)ChildrenType.SelectFrame).localPosition.y;
+
+                atkEnemies(prefabs, skillType);
+                atkCancel();
+            }
+
+            yield return null;
+        }
+    }
+
+    private void atkEnemies(List<GameObject> enemies, SkillType skillType)
+    {
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)) && isInputEnable)
+        {
+            isInputEnable = false;
+            //1.根据枚举值从技能缓存读技能 2.攻击后，播放敌人受伤动画
+            int damageVal = SkillManager.instance.getSkillCache()[(int)skillType].damage;
+            int practicalDamage = damageVal + (int)PlayerManager.instance.atk;
+            enemies[index].GetComponent<EnemyManager>().takeDamage(100);    //150用作测试
+            //引用光标和选择框
+            GameObject frame = BattleManager.instance.canvas.transform.GetChild((int)ChildrenType.SelectFrame).gameObject;
+            GameObject cursor = BattleManager.instance.canvas.transform.GetChild((int)ChildrenType.FrameCursor).gameObject;
+            frame.SetActive(false);
+            cursor.SetActive(false);
+            //去看回调函数
+        }
+    }
+
+    public IEnumerator startInfoPanel() //玩家信息面板
+    {
+        yield return null;
+
+        int curIndex = canvas.transform.GetChild((int)ChildrenType.InfoPanel).GetSiblingIndex();    //记录当前位置的索引
+        canvas.transform.GetChild((int)ChildrenType.InfoPanel).SetAsLastSibling();
+        canvas.transform.GetChild(canvas.transform.childCount - 1).Find("1").Find("suzhi1").gameObject.SetActive(true);
+        Vector3 pos = canvas.transform.GetChild(canvas.transform.childCount - 1).Find("2").Find("cursor").localPosition;
+
+        Vector3 offset = new Vector3(475, 0, 0);
+        int index = 0;
+        while (true)
+        {
+            if (index == 4 && Input.GetKeyDown(KeyCode.Space))
+            {
+                //移动回原本的索引位置 保持列表中索引位置不变
+                canvas.transform.GetChild(canvas.transform.childCount - 1).Find("2").Find("cursor").localPosition = pos;
+                canvas.transform.GetChild(canvas.transform.childCount - 1).gameObject.SetActive(false);
+                canvas.transform.GetChild(canvas.transform.childCount - 1).SetSiblingIndex(curIndex);
+                commandManager.ExecuteCommand("", "Battle Skill Panel 2");
+            }
+
+            //向右
+            if (Input.GetKeyDown(KeyCode.D) && index < 4)
+            {
+                //关闭当前面板 开启下个面板 切换标题 至于移动子对象 是为了不被poolmanager中的敌人覆盖 提示给到这了 自己思考下
+                var obj1 = canvas.transform.GetChild(canvas.transform.childCount - 1).Find("1");
+                obj1.GetChild(index).gameObject.SetActive(false);
+
+                obj1.GetChild(index + 1).gameObject.SetActive(true);
+                var obj2 = canvas.transform.GetChild(canvas.transform.childCount - 1).Find("2");
+                var cursor = obj2.Find("cursor");
+                cursor.localPosition += offset;
+                index++;
+            }
+            //向左
+            else if (Input.GetKeyDown(KeyCode.A) && index > 0)
+            {
+                var obj1 = canvas.transform.GetChild(canvas.transform.childCount - 1).Find("1");
+                obj1.GetChild(index).gameObject.SetActive(false);
+
+                obj1.GetChild(index - 1).gameObject.SetActive(true);
+                var obj2 = canvas.transform.GetChild(canvas.transform.childCount - 1).Find("2");
+                var cursor = obj2.Find("cursor");
+                cursor.localPosition -= offset;
+                index--;
+            }
+
+            yield return null;
+        }
+    }
+
+    private void atkCancel()
+    {
+        if (Input.GetKeyDown(KeyCode.Z) || Input.GetMouseButtonDown(1))
+        {
+            commandManager.ExecuteCommand("", curPanel.name);
+        }
+    }
+
+    private IEnumerator lightDissolution()  //光边溶解
+    {
+        float weight = 0f;  //详情见shader
+        float duration = 2f;
+        while (weight < 1.1f)
+        {
+            weight += Time.deltaTime / duration;
+            weight = Mathf.Clamp(weight, 0f, 1.1f);
+            Material material = childrenDic["Karryn"][(int)playerCurState].GetComponent<Image>().material;
+            material.SetFloat("dissolution", weight);
+            yield return null;
+        }
+        StopAllCoroutines();
+        dontDestroy();
+        SceneLoader.instance.loadGameScene((int)SceneEnumVal.SexTransitionScene);
+    }
+
+    private void LoadToDictionary(Dictionary<string, Animator> dic, Animator[] animations) //移动至BCM脚本-(ButtonCommandManager)
+    {
+        // 遍历所有的动画，将它们添加到字典中
+        foreach (Animator animation in animations)
+        {
+            string objectName = animation.gameObject.name;
+            //Debug.Log(objectName);
+            // 检测并添加 cursorName
+            if (objectName.EndsWith(" cursor"))
+            {
+                string panelName = objectName.Replace(" cursor", "");
+                dic.Add(panelName + " cursor", animation);
+                // Debug.Log(objectName);
+            }
+            // 检测并添加 focusName
+            else if (objectName.EndsWith(" focus"))
+            {
+                string panelName = objectName.Replace(" focus", "");
+                dic.Add(panelName + " focus", animation);
+                // Debug.Log(objectName);
+            }
+        }
     }
 
     private void findChildrenInParent(string name, List<GameObject> list) //面板类-移动至考虑功能/流程是否保留(ButtonCommandManager)
@@ -409,7 +827,7 @@ public class BattleManager : Singleton<BattleManager>
         else if ((Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A)) && SkillIndex - 1 >= 0 && SkillIndex - 1 < children.Count &&
                  (int)(children[SkillIndex - 1].GetComponent<RectTransform>().anchoredPosition.x) == curSkillX - skillIconOffset.x)
         {
-            
+
             leftCount++;
             //int dir = -1;
             //if (leftCount == 4)
@@ -438,13 +856,13 @@ public class BattleManager : Singleton<BattleManager>
                     updateScrollViewPosition(children, scrollOffset, keyDown);
                     dir = -2;
                 }
-                
+
             }
 
             isInputEnable = false;
             prevIndex = SkillIndex;
             SkillIndex -= 4;
-            moveCursorAndFocus(cursorName, focusName, false,dir, SkillIndex, children);
+            moveCursorAndFocus(cursorName, focusName, false, dir, SkillIndex, children);
             int tempIndex = SkillIndex + 4;
             updateSkillDescription(children[tempIndex].gameObject, children[SkillIndex].gameObject);
             isInputEnable = true;
@@ -454,19 +872,19 @@ public class BattleManager : Singleton<BattleManager>
         {
             //int num = (children.Count + 3) / 4;
             int dir = -1;
-            if (scrollOffset < num-1) // 检查是否还有下方隐藏的行 1:默认情况下占一行
+            if (scrollOffset < num - 1) // 检查是否还有下方隐藏的行 1:默认情况下占一行
             {
                 scrollOffset++; // 向下滚动一行
-                if (scrollOffset%3 == 0)
+                if (scrollOffset % 3 == 0)
                 {
                     page++;
                     keyDown = "Down";
                     updateScrollViewPosition(children, scrollOffset, keyDown);
                     dir = 2;
                 }
-               
+
             }
-            
+
             isInputEnable = false;
             prevIndex = SkillIndex;
             SkillIndex += 4;
@@ -480,7 +898,7 @@ public class BattleManager : Singleton<BattleManager>
     //移动至BCM脚本
 
     // 新增函数，用于更新滚动视图的位置
-    private void updateScrollViewPosition(List<Transform> children, int scrollOffset,string KeyDowns)
+    private void updateScrollViewPosition(List<Transform> children, int scrollOffset, string KeyDowns)
     {
         foreach (var child in children)
         {
@@ -495,7 +913,7 @@ public class BattleManager : Singleton<BattleManager>
             {
                 pos.y += -3 * skillIconOffset.y;
             }
-            
+
             child.GetComponent<RectTransform>().anchoredPosition = pos;
         }
     }
@@ -571,7 +989,7 @@ public class BattleManager : Singleton<BattleManager>
     }
 
 
-private IEnumerator iconScale(GameObject button) //面板图标按钮放大缩小
+    private IEnumerator iconScale(GameObject button) //面板图标按钮放大缩小
     {
         float t = 0;    //插值
         float a = 1f, b = 1.5f;
@@ -631,7 +1049,7 @@ private IEnumerator iconScale(GameObject button) //面板图标按钮放大缩�
             {
                 foreach (GameObject button in buttonList)
                 {
-                    button.GetComponent<UnityEngine.UI.Button>().interactable = false;  
+                    button.GetComponent<UnityEngine.UI.Button>().interactable = false;
                 }
                 // 停止缩放并将其还原
                 StopCoroutine(corIconScale);
@@ -785,7 +1203,7 @@ private IEnumerator iconScale(GameObject button) //面板图标按钮放大缩�
                 string prevSkillDescName = prevSkill.name + "Text1";
                 string curSkillDescName = curSkill.name + "Text1";
 
-               //Debug.Log("Previous skill desc name: " + prevSkillDescName); // 输出前一个技能的描述文本名称
+                //Debug.Log("Previous skill desc name: " + prevSkillDescName); // 输出前一个技能的描述文本名称
                 //Debug.Log("Current skill desc name: " + curSkillDescName); // 输出当前技能的描述文本名称
 
                 // 根据名称设置描述文本对象的可见性
@@ -817,405 +1235,23 @@ private IEnumerator iconScale(GameObject button) //面板图标按钮放大缩�
             //Debug.Log("Setting " + curSkill.name + " Text1 to active."); // 输出将当前技能的 Text1 设置为可见
         }
     }
-
     //移动至BCM脚本---//到此结束
 
-    private void buttonClicked(GameObject btn)
+    public void useKeyboardOperationMainButton(GameObject curObj)    //表示按钮或者面板 //---后续将该段代码移动至BCM脚本---(ButtonCommandManager)斟酌考虑移动//
     {
-        EventSystem.current.SetSelectedGameObject(btn);
-        //获取当前被点击的按钮
-        curButton = EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.Button>();
-
-        //禁用其他的按钮防止玩家点击其他的按钮出现bug
-        foreach (var button in buttons)
+        if (curObj.transform.parent.name == "Battle Skill Panel 1")
         {
-            if (button != curButton)
-            {
-                button.interactable = false;
-            }
+            corSwitchOtherButton = StartCoroutine(switchOtherButton(mainPanel1));
+            corIconScale = StartCoroutine(iconScale(mainPanel1[0]));
         }
-
-        //创建对应的按钮处理器实例来处理按钮的点击事件,用命令模式避免重复写if  else if，增加扩展性
-
-        if (commandManager == null)
+        //从Atk Skill Panel 可以回退到 2号技能面板
+        else if (curObj.transform.parent.name == "Battle Skill Panel 2" || curObj.transform.parent.name == "Atk Skill Panel")
         {
-/*#if UNITY_EDITOR
-            Debug.LogError("按钮命令器初始化失败，请检查!");
-#endif*/
-        }
-        else
-        {
-            commandManager.ExecuteCommand(curButton.gameObject.name);  //执行命令  (设计模式：命令模式)
-
-            //等待处理按钮事件的逻辑执行完后，再将其他按钮启用
-            foreach (var button in buttons)
-            {
-                if (button.gameObject != curButton)
-                {
-                    button.interactable = true;
-                }
-            }
-        }
-    }
-
-    public IEnumerator BattleLoop()
-    {
-        yield return StartCoroutine(PrepareRound());
-
-        while (true)
-        {
-            yield return StartCoroutine(PlayerRound());
-
-            if (CheckBattleEndCondition())
-                break;
-
-            yield return StartCoroutine(EnemyRound());
-
-            if (CheckBattleEndCondition())
-                break;
-            //将战斗技能1号面板开启,供用户操作
-            canvas.transform.GetChild((int)ChildrenType.BattleSkillPanel1).gameObject.SetActive(true);
-            yield return null;
-        }
-    }
-
-    private void Update()
-    {
-        //通过计时器限制玩家短时间内多次输入，导致结果不可预料
-        if (!isPressKey)
-        {
-            keyPressTimer += Time.deltaTime;
-            if (keyPressTimer >= keyPressInterval)
-            {
-                isPressKey = true;
-                keyPressTimer = 0;  //重置计时器时间
-            }
-        }
-        else
-        {
-            if (isPanel && isInputEnable)
-            {
-                checkUserMoveAction();
-            }
-        }
-    }
-
-    public IEnumerator PrepareRound()
-    {
-        /*#if UNITY_EDITOR
-            Debug.Log("战斗开始准备回合");
-        #endif*/
-        // 在这里处理战斗开始时的准备逻辑
-        //1.播放音乐 2.显示主角 3.敌人列表上显示敌人
-
-        if (Global.instance.battlePrevSceneName == "main1L")
-        {
-            if (!Global.instance.isSuppress)  // 未镇压
-            {
-                if (!Global.instance.isClear1L) // 一层未通关
-                {
-                    int enemySize = UnityEngine.Random.Range(1, 6); // 随机生成1到5之间的整数
-                    int[] values = { goblinIndex, goblinIndex }; // 用于测试，实际应该添加适当的敌人索引
-                                                                 // 一层 thug 和 goblin 镇压后 thug goblin guard
-                    if (Global.instance.battlePrevNpcName.Contains("goblin"))
-                    {
-                        prefabs.AddRange(spawnRandomEnemies(enemySize, values)); // 生成指定数量的随机敌人
-                        /*#if UNITY_EDITOR
-                        Debug.Log("敌人数量是" + prefabs.Count.ToString());
-                        #endif*/
-                        setEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400); // 设置随机敌人的属性
-                    }
-                    else if (Global.instance.battlePrevNpcName == "thug")
-                    {
-                        prefabs.AddRange(spawnRandomEnemies(enemySize, values)); // 生成指定数量的随机敌人
-                        setEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400); // 设置随机敌人的属性
-                    }
-                    else if (Global.instance.battlePrevNpcName == "1LBOSS")
-                    {
-                        enemySize = 3; // 指定敌人数量为3
-                        prefabs.AddRange(spawnRandomEnemies(enemySize, values)); // 生成指定数量的随机敌人
-                        setEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400); // 设置随机敌人的属性
-                        boss1L.GetComponent<EnemyManager>().initialize(300, 300, 300, 300, 500, 50, 1000);
-                    }
-                }
-                else
-                {
-                    // 通关后的逻辑
-                }
-            }
-            else
-            {
-                // 镇压后的逻辑
-            }
-        }
-        else if (SceneManager.GetActiveScene().name == Global.instance.mainScene2L)
-        {
-            // 处理第二层的逻辑
-        }
-        else if (SceneManager.GetActiveScene().name == Global.instance.mainScene3L)
-        {
-            // 处理第三层的逻辑
-        }
-        yield break;
-    }
-
-    private GameObject[] spawnRandomEnemies(int enemySize, int[] enemyIndexArray)
-    {
-        GameObject[] arr = new GameObject[enemySize];
-        for (int i = 0; i < enemySize; i++)
-        {
-            int num = UnityEngine.Random.Range(0, enemyIndexArray.Length); // 使用敌人索引数组的长度来确定范围
-            arr[i] = PoolManager.instance.getObjInPool(dictionary[enemyIndexArray[num]], Global.instance.enemiesTransform[i]);
-        }
-        return arr;
-    }
-
-    private void setEnemiesHpAndMp(ref List<GameObject> enemis_, float hp_, float mp_, float maxhp_, float maxmp_, float atk_, float def_, float sex_)
-    {
-        for (int i = 0; i < enemis_.Count; i++)
-        {
-            enemis_[i].GetComponent<EnemyManager>().initialize(hp_, mp_, maxhp_, maxmp_, atk_, def_, sex_);
-            /*#if UNITY_EDITOR
-            Debug.Log("生成的敌人是" + enemis_[i].gameObject.name + "他的索引是" + enemis_[i].GetComponent<EnemyManager>().EnemyIndex.ToString() +
-                "hp_:" + hp_.ToString() + "mp_:" + mp_.ToString() + "maxhp_:" + maxhp_.ToString() + "maxmp_:" + maxmp_.ToString() + "atk_:" +
-                atk_.ToString() + "atk_:" + atk_.ToString() + "def_:" + def_.ToString());
-            #endif*/
+            corSwitchOtherButton = StartCoroutine(switchOtherButton(mainPanel2));
+            corIconScale = StartCoroutine(iconScale(mainPanel2[0]));
         }
     }
 
 
-    public IEnumerator EnemyRound()
-    {
-        Debug.Log("敌人回合");
-        // 1.敌人使用普通atk 或者 sex atk
-        for (int i = 0; i < prefabs.Count; i++)
-        {
-            int res = UnityEngine.Random.Range(1, 3);   //左闭右开 所以随机数是1or2 浮点型是左闭右闭
-            res = 1;
-            if (res % 2 == 0)   //使用普通atk
-            {
-                float atk = prefabs[i].GetComponent<EnemyManager>().getAtk();   //获得敌人的攻击力
-                PlayerManager.instance.takeDamage(atk);
-                yield return new WaitForSeconds(1f);  //等待血条减少
-            }
-            else    //使用sex atk
-            {
-                //播放sex动画
-                enemyAtkEvent?.Invoke();
-
-                float sexVal = prefabs[i].GetComponent<EnemyManager>().getSexVal();
-                PlayerManager.instance.addHappyVal(40f);   //20用作测试
-                PlayerManager.instance.subtractMagic(sexVal + PlayerManager.instance.curHappyVal);  //测试
-                yield return new WaitForSeconds(2f);    //因为要等待img对象动作执行完毕，所以多等一会
-            }
-        }
-    }
-
-    private bool CheckBattleEndCondition()
-    {
-        // 在这里编写判断战斗胜利或失败的条件
-        // 如果满足胜利条件，返回true，战斗将结束
-        // 如果满足sex条件，返回true，战斗将结束
-        // 如果生命值不为0，返回false，继续进行下一回合
-        // 私有变量isBattle为真(进入胜利计分面板)为假就(进入sex计分面板)
-
-        if (PlayerManager.instance.checkFail())
-        {
-            //进入sex场景
-            releaseResource();
-            dontDestroy();
-            StartCoroutine(lightDissolution());
-            return true;
-        }
-        else if (prefabs.Count == 0)       //胜利敌人全部被消灭
-        {
-            Global.instance.isWin = true;
-            releaseResource();
-            StopAllCoroutines();
-            dontDestroy();
-            SceneLoader.instance.loadGameScene((int)SceneEnumVal.Main1L);
-            return false;
-        }
-        return false;   //即不成功也不失败
-    }
-
-    private void releaseResource()
-    {
-        // 清空动画字典
-        animDic.Clear();
-        // 清空子对象字典
-        childrenDic.Clear();
-        // 清空预制体列表
-        prefabs.Clear();
-        // 清空主面板1列表
-        mainPanel1.Clear();
-        // 清空主面板2列表
-        mainPanel2.Clear();
-        // 清空需要禁用的子对象列表
-        disableChildrenList.Clear();
-        // 将按钮变量设置为 null，释放引用
-        buttons = null;
-    }
-
-
-    private void dontDestroy()
-    {
-        // 将PlayerManager移回DontDestroyOnLoad场景 注意只有根对象才可以使用DontDestroyOnLoad方法
-        PlayerManager.instance.GetComponent<RectTransform>().SetParent(null, false);
-        DontDestroyOnLoad(PlayerManager.instance.gameObject);
-
-        // 将对象池管理器移回DontDestroyOnLoad场景
-        PoolManager.instance.transform.GetComponent<RectTransform>().SetParent(null, false);
-        DontDestroyOnLoad(PoolManager.instance.gameObject);
-    }
-
-    private IEnumerator WaitForPlayerInput()
-    {
-        // 假设在面板管理器中等待玩家操作的逻辑
-        yield return null;
-    }
-
-    //开始选择敌人并攻击他
-    public IEnumerator beginSelectEnemyAtk(List<GameObject> enemies, SkillType skillType)
-    {
-        yield return null;  //将协程挂起等待至下一帧，避免当前帧同时判断2次用户输入
-        index = 0;  //用户每向下移动一次，索引加1，用来定位敌人
-        total = enemies.Count; //几个敌人移动几次
-        int n = 1;  //至少出现一个敌人
-        float y = canvas.transform.GetChild((int)ChildrenType.SelectFrame).gameObject.transform.localPosition.y;
-
-        while (true)
-        {
-            //不移动选中框直接攻击当前敌人
-            atkEnemies(prefabs, skillType);
-            //撤销
-            atkCancel();
-
-            if (Input.GetKeyDown(KeyCode.S) && y >= yBottom && n < total && total > 1)
-            {
-                int dir = -1;
-                //移动选择框和光标
-                canvas.transform.GetChild((int)ChildrenType.SelectFrame).localPosition += new Vector3(0, dir * lightFrameOffset.y, 0);
-                canvas.transform.GetChild((int)ChildrenType.FrameCursor).localPosition += new Vector3(0, dir * lightFrameOffset.y, 0);
-                index++;
-                n++;
-                y = canvas.transform.GetChild((int)ChildrenType.SelectFrame).localPosition.y;
-
-                //选中敌人进行攻击，敌人减血
-                atkEnemies(prefabs, skillType);
-                //撤销攻击
-                atkCancel();
-            }
-            else if (Input.GetKeyDown(KeyCode.W) && y <= yTop && n > 1 && total > 1 && y <= yTopChanged)
-            {
-                int dir = 1;
-                canvas.transform.GetChild((int)ChildrenType.SelectFrame).localPosition += new Vector3(0, dir * lightFrameOffset.y, 0);
-                canvas.transform.GetChild((int)ChildrenType.FrameCursor).localPosition += new Vector3(0, dir * lightFrameOffset.y, 0);
-                index--;
-                n--;
-                y = canvas.transform.GetChild((int)ChildrenType.SelectFrame).localPosition.y;
-
-                atkEnemies(prefabs, skillType);
-                atkCancel();
-            }
-
-            yield return null;
-        }
-    }
-
-    private void atkEnemies(List<GameObject> enemies, SkillType skillType)
-    {
-        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)) && isInputEnable)
-        {
-            isInputEnable = false;
-            //1.根据枚举值从技能缓存读技能 2.攻击后，播放敌人受伤动画
-            int damageVal = SkillManager.instance.getSkillCache()[(int)skillType].damage;
-            int practicalDamage = damageVal + (int)PlayerManager.instance.atk;
-            enemies[index].GetComponent<EnemyManager>().takeDamage(100);    //150用作测试
-            //引用光标和选择框
-            GameObject frame = BattleManager.instance.canvas.transform.GetChild((int)ChildrenType.SelectFrame).gameObject;
-            GameObject cursor = BattleManager.instance.canvas.transform.GetChild((int)ChildrenType.FrameCursor).gameObject;
-            frame.SetActive(false);
-            cursor.SetActive(false);
-            //去看回调函数
-        }
-    }
-
-    private void atkCancel()
-    {
-        if (Input.GetKeyDown(KeyCode.Z) || Input.GetMouseButtonDown(1))
-        {
-            commandManager.ExecuteCommand("", curPanel.name);
-        }
-    }
-
-    public IEnumerator startInfoPanel()
-    {
-        yield return null;
-
-        int curIndex = canvas.transform.GetChild((int)ChildrenType.InfoPanel).GetSiblingIndex();    //记录当前位置的索引
-        canvas.transform.GetChild((int)ChildrenType.InfoPanel).SetAsLastSibling();
-        canvas.transform.GetChild(canvas.transform.childCount - 1).Find("1").Find("suzhi1").gameObject.SetActive(true);
-        Vector3 pos = canvas.transform.GetChild(canvas.transform.childCount - 1).Find("2").Find("cursor").localPosition;
-
-        Vector3 offset = new Vector3(475, 0, 0);
-        int index = 0;
-        while (true)
-        {
-            if (index == 4 && Input.GetKeyDown(KeyCode.Space))
-            {
-                //移动回原本的索引位置 保持列表中索引位置不变
-                canvas.transform.GetChild(canvas.transform.childCount - 1).Find("2").Find("cursor").localPosition = pos;
-                canvas.transform.GetChild(canvas.transform.childCount - 1).gameObject.SetActive(false);
-                canvas.transform.GetChild(canvas.transform.childCount - 1).SetSiblingIndex(curIndex);
-                commandManager.ExecuteCommand("", "Battle Skill Panel 2");
-            }
-
-            //向右
-            if (Input.GetKeyDown(KeyCode.D) && index < 4)
-            {
-                //关闭当前面板 开启下个面板 切换标题 至于移动子对象 是为了不被poolmanager中的敌人覆盖 提示给到这了 自己思考下
-                var obj1 = canvas.transform.GetChild(canvas.transform.childCount - 1).Find("1");
-                obj1.GetChild(index).gameObject.SetActive(false);
-
-                obj1.GetChild(index + 1).gameObject.SetActive(true);
-                var obj2 = canvas.transform.GetChild(canvas.transform.childCount - 1).Find("2");
-                var cursor = obj2.Find("cursor");
-                cursor.localPosition += offset;
-                index++;
-            }
-            //向左
-            else if (Input.GetKeyDown(KeyCode.A) && index > 0)
-            {
-                var obj1 = canvas.transform.GetChild(canvas.transform.childCount - 1).Find("1");
-                obj1.GetChild(index).gameObject.SetActive(false);
-
-                obj1.GetChild(index - 1).gameObject.SetActive(true);
-                var obj2 = canvas.transform.GetChild(canvas.transform.childCount - 1).Find("2");
-                var cursor = obj2.Find("cursor");
-                cursor.localPosition -= offset;
-                index--;
-            }
-
-            yield return null;
-        }
-    }
-
-    private IEnumerator lightDissolution()  //光边溶解
-    {
-        float weight = 0f;  //详情见shader
-        float duration = 2f;
-        while (weight < 1.1f)
-        {
-            weight += Time.deltaTime / duration;
-            weight = Mathf.Clamp(weight, 0f, 1.1f);
-            Material material = childrenDic["Karryn"][(int)playerCurState].GetComponent<Image>().material;
-            material.SetFloat("dissolution", weight);
-            yield return null;
-        }
-        StopAllCoroutines();
-        dontDestroy();
-        SceneLoader.instance.loadGameScene((int)SceneEnumVal.SexTransitionScene);
-    }
 
 }

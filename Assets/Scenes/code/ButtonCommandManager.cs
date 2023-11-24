@@ -346,6 +346,7 @@ public class specialsexskillButtonCommand : Icommand//新加的面板逻辑未完成，面板
          }
     }
 
+
 public class SexSkillPanelCommand : Icommand//新加的面板逻辑未完成，面板内按钮交互逻辑
 {
     public void execute()
@@ -546,6 +547,7 @@ public class ButtonCommandManager //面板交互核心，视情况进行优化
 
             case "Sex SkillPanel":
                 return new SexSkillPanelCommand();
+
 
             default:
                 return null;
