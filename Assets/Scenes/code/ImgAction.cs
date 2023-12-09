@@ -7,12 +7,12 @@ public class ImgAction : MonoBehaviour
 {
     private void OnEnable()
     {
-        BattleManager.instance.enemyAtkEvent += imageMove;
+        BattleManager.instance.EnemyAtkEvent += imageMove;
     }
 
     private void OnDestroy()
     {
-        BattleManager.instance.enemyAtkEvent -= imageMove;
+        BattleManager.instance.EnemyAtkEvent -= imageMove;
     }
 
     private void imageMove()

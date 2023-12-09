@@ -244,21 +244,22 @@ public class BattleManager : Singleton<BattleManager>
 
     }
 
-  
+
 
     public void loadResource()
     {
+
         prefabs.Clear();    //每次调用start函数时，要清空之前存储的敌人
         //首先获取场景内画布
         canvas = GameObject.Find("Battle Canvas").gameObject;
         //启用目标子对象，因为当前场景内有些对象处于禁用状态无法获取他们的组件，导致下面的buttons Animation is null
-        string[] strArr = { "Battle Skill Panel 2", "Volition Panel", "Spiritual  Panel 1" ,"Spiritual  Panel 2","Sex Panel","Special Skill Panel" ,"Atk Skill Panel", "info panel"};
+        string[] strArr = { "Battle Skill Panel 2", "Volition Panel", "Spiritual  Panel 1", "Spiritual  Panel 2", "Sex Panel", "Special Skill Panel", "Atk Skill Panel", "info panel" };
         disableChildrenList = enableChildren(strArr, canvas.transform);
 
         buttons = FindObjectsByType<UnityEngine.UI.Button>(FindObjectsSortMode.None);
-        
-        Animator[] animArr = FindObjectsByType<Animator>(FindObjectsInactive.Include,FindObjectsSortMode.None);//BUG(没有insctive导致查找失败)
-        if(animDic.Count == 0) LoadToDictionary(animDic, animArr);  //防止重复添加 要考虑再次进入战斗场景
+
+        Animator[] animArr = FindObjectsByType<Animator>(FindObjectsInactive.Include, FindObjectsSortMode.None);//BUG(没有insctive导致查找失败)
+        if (animDic.Count == 0) LoadToDictionary(animDic, animArr);  //防止重复添加 要考虑再次进入战斗场景
         curScrollbar = canvas.transform.Find("Volition Panel").Find("Scroll View").Find("Scrollbar Vertical").GetComponent<Scrollbar>();
         curScrollbar.interactable = false;
         //找到后禁用这些启用的子对象
@@ -286,7 +287,14 @@ public class BattleManager : Singleton<BattleManager>
         EventSystem.current.SetSelectedGameObject(btn);
 
         // 获取当前被点击的按钮
-        curButton = EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.Button>();
+        curButton = EventSystem.current.currentSelectedGameObject?.GetComponent<UnityEngine.UI.Button>();
+
+        // 检查当前按钮是否为 null
+        if (curButton == null)
+        {
+            Debug.LogError("当前按钮为 null！");
+            return;
+        }
 
         // 禁用其他的按钮防止玩家点击其他的按钮出现 bug
         foreach (var button in buttons)
@@ -300,23 +308,25 @@ public class BattleManager : Singleton<BattleManager>
         // 创建对应的按钮处理器实例来处理按钮的点击事件，用命令模式避免重复写 if-else if，增加扩展性
         if (commandManager == null)
         {
-            /*#if UNITY_EDITOR
             Debug.LogError("按钮命令器初始化失败，请检查!");
-            #endif*/
         }
         else
         {
             if (curButton.gameObject.name == "run")  // 检查按钮是否为“run”按钮
             {
                 // 执行逃跑/退出逻辑
-                StartCoroutine(RunAway());
+                //StartCoroutine(RunAway());\
+                BattleManager battleManager = BattleManager.instance;
+                battleManager.childrenDic = new Dictionary<string, List<Transform>>();
+                CheckBattleEndCondition("taopao");
+               
             }
             else
             {
                 // 执行其他按钮的逻辑
                 commandManager.ExecuteCommand(curButton.gameObject.name);  // 执行命令（设计模式：命令模式）
             }
-
+            //commandManager.ExecuteCommand(curButton.gameObject.name);  // 执行命令（设计模式：命令模式）
             // 等待处理按钮事件的逻辑执行完后，再将其他按钮启用
             foreach (var button in buttons)
             {
@@ -327,31 +337,88 @@ public class BattleManager : Singleton<BattleManager>
             }
         }
     }
-
     private IEnumerator RunAway()
     {
         Debug.Log("玩家选择逃跑！");
-
-        // 播放逃跑动画，这里假设有一个名为 "RunAwayAnimation" 的动画组件
-        // 如果有特定的逃跑动画，请将其替换为实际的动画名称
+        
+        //previousScene = SceneManager.GetActiveScene().name;
+        // 播放逃跑动画
         //animDic["Karryn"].SetTrigger("RunAwayAnimation");
 
-        // 显示逃跑提示信息，这里假设有一个名为 "RunAwayText" 的UI文本组件
-        // 如果有特定的提示信息，请将其替换为实际的文本信息
-        // 如果你的逃跑过程涉及多个步骤，你可以在此处添加适当的等待时间和过渡效果
+        // 显示逃跑提示信息
         //UIManager.instance.ShowText("逃跑成功！");
 
+
+
         // 等待一段时间，模拟逃跑后的处理
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(0.5f);
 
-        // 结束战斗，切换到逃跑后的场景
-        StopAllCoroutines();
+        // 结束战斗，清空和初始化
+        ReleaseResource();
 
-        // 这里可以添加切换场景的逻辑，假设有一个名为 "RunAwayScene" 的场景
+        // 切换到逃跑后的场景
         SceneLoader.instance.loadGameScene((int)SceneEnumVal.Main1L);
+        //SceneManager.LoadScene(previousScene);
+        // 初始化敌人
+        //InitializeRound();
+    }
+
+    private void InitializeRound()
+    {
+        // 清空资源
+        ReleaseResource();
+        // 其他初始化逻辑，根据需要添加
+    }
+    private void ReleaseResource()
+    {
+        // 清空动画字典
+        animDic.Clear();
+        // 清空子对象字典
+        childrenDic.Clear();
+        // 清空预制体列表
+        prefabs.Clear();
+        // 清空主面板1列表
+        mainPanel1.Clear();
+        // 清空主面板2列表
+        mainPanel2.Clear();
+        // 清空需要禁用的子对象列表
+        disableChildrenList.Clear();
+        // 将按钮变量设置为 null，释放引用
+
+        BattleManager battleManager = BattleManager.instance;
+        battleManager.childrenDic.Clear();
+        buttons = null;
     }
 
 
+    private bool CheckBattleEndCondition(string taopa = "")
+    {
+        // 在这里编写判断战斗胜利或失败的条件
+        // 如果满足胜利条件，返回true，战斗将结束
+        // 如果满足sex条件，返回true，战斗将结束
+        // 如果生命值不为0，返回false，继续进行下一回合
+        // 私有变量isBattle为真(进入胜利计分面板)为假就(进入sex计分面板)
+
+        if (PlayerManager.instance.checkFail())
+        {
+            //进入sex场景
+            ReleaseResource();
+            dontDestroy();
+            StartCoroutine(lightDissolution());
+            return true;
+        }
+        else if (prefabs.Count == 0 ||!string.IsNullOrEmpty(taopa))       //胜利敌人全部被消灭
+        {
+            
+            Global.instance.isWin = true;
+            //ReleaseResource();
+            StopAllCoroutines();
+            dontDestroy();
+            SceneLoader.instance.loadGameScene((int)SceneEnumVal.Main1L);
+            return false;
+        }
+        return false;   //即不成功也不失败
+    }
 
     public IEnumerator BattleLoop()
     {
@@ -394,14 +461,15 @@ public class BattleManager : Singleton<BattleManager>
             }
         }
     }
-
+    //private string previousScene;
     public IEnumerator PrepareRound()
     {
-        /*#if UNITY_EDITOR
-            Debug.Log("战斗开始准备回合");
-        #endif*/
+#if UNITY_EDITOR
+        Debug.Log("战斗开始准备回合");
+#endif
         // 在这里处理战斗开始时的准备逻辑
         //1.播放音乐 2.显示主角 3.敌人列表上显示敌人
+        //InitializeRound();
 
         if (Global.instance.battlePrevSceneName == "main1L")
         {
@@ -409,27 +477,24 @@ public class BattleManager : Singleton<BattleManager>
             {
                 if (!Global.instance.isClear1L) // 一层未通关
                 {
-                    int enemySize = UnityEngine.Random.Range(1, 6); // 随机生成1到5之间的整数
-                    int[] values = { goblinIndex, goblinIndex }; // 用于测试，实际应该添加适当的敌人索引
-                                                                 // 一层 thug 和 goblin 镇压后 thug goblin guard
+                    int enemySize = UnityEngine.Random.Range(1, 6);
+                    int[] values = { goblinIndex, goblinIndex };
+
                     if (Global.instance.battlePrevNpcName.Contains("goblin"))
                     {
-                        prefabs.AddRange(SpawnRandomEnemies(enemySize, values)); // 生成指定数量的随机敌人
-                        /*#if UNITY_EDITOR
-                        Debug.Log("敌人数量是" + prefabs.Count.ToString());
-                        #endif*/
-                        SetEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400); // 设置随机敌人的属性
+                        prefabs.AddRange(SpawnRandomEnemies(enemySize, values));
+                        SetEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400);
                     }
                     else if (Global.instance.battlePrevNpcName == "thug")
                     {
-                        prefabs.AddRange(SpawnRandomEnemies(enemySize, values)); // 生成指定数量的随机敌人
-                        SetEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400); // 设置随机敌人的属性
+                        prefabs.AddRange(SpawnRandomEnemies(enemySize, values));
+                        SetEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400);
                     }
                     else if (Global.instance.battlePrevNpcName == "1LBOSS")
                     {
-                        enemySize = 3; // 指定敌人数量为3
-                        prefabs.AddRange(SpawnRandomEnemies(enemySize, values)); // 生成指定数量的随机敌人
-                        SetEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400); // 设置随机敌人的属性
+                        enemySize = 3;
+                        prefabs.AddRange(SpawnRandomEnemies(enemySize, values));
+                        SetEnemiesHpAndMp(ref prefabs, 100, 100, 100, 100, 500, 20, 400);
                         boss1L.GetComponent<EnemyManager>().initialize(300, 300, 300, 300, 500, 50, 1000);
                     }
                 }
@@ -451,8 +516,10 @@ public class BattleManager : Singleton<BattleManager>
         {
             // 处理第三层的逻辑
         }
+
         yield break;
     }
+
 
     private GameObject[] SpawnRandomEnemies(int enemySize, int[] enemyIndexArray)
     {
@@ -470,11 +537,11 @@ public class BattleManager : Singleton<BattleManager>
         for (int i = 0; i < enemis_.Count; i++)
         {
             enemis_[i].GetComponent<EnemyManager>().initialize(hp_, mp_, maxhp_, maxmp_, atk_, def_, sex_);
-            /*#if UNITY_EDITOR
+#if UNITY_EDITOR
             Debug.Log("生成的敌人是" + enemis_[i].gameObject.name + "他的索引是" + enemis_[i].GetComponent<EnemyManager>().EnemyIndex.ToString() +
                 "hp_:" + hp_.ToString() + "mp_:" + mp_.ToString() + "maxhp_:" + maxhp_.ToString() + "maxmp_:" + maxmp_.ToString() + "atk_:" +
                 atk_.ToString() + "atk_:" + atk_.ToString() + "def_:" + def_.ToString());
-            #endif*/
+#endif
         }
     }
 
@@ -506,55 +573,10 @@ public class BattleManager : Singleton<BattleManager>
         }
     }
 
-    private bool CheckBattleEndCondition()
-    {
-        // 在这里编写判断战斗胜利或失败的条件
-        // 如果满足胜利条件，返回true，战斗将结束
-        // 如果满足sex条件，返回true，战斗将结束
-        // 如果生命值不为0，返回false，继续进行下一回合
-        // 私有变量isBattle为真(进入胜利计分面板)为假就(进入sex计分面板)
-
-        if (PlayerManager.instance.checkFail())
-        {
-            //进入sex场景
-            ReleaseResource();
-            dontDestroy();
-            StartCoroutine(lightDissolution());
-            return true;
-        }
-        else if (prefabs.Count == 0)       //胜利敌人全部被消灭
-        {
-            Global.instance.isWin = true;
-            ReleaseResource();
-            StopAllCoroutines();
-            dontDestroy();
-            SceneLoader.instance.loadGameScene((int)SceneEnumVal.Main1L);
-            return false;
-        }
-        return false;   //即不成功也不失败
-    }
-
-    private void ReleaseResource()
-    {
-        // 清空动画字典
-        animDic.Clear();
-        // 清空子对象字典
-        childrenDic.Clear();
-        // 清空预制体列表
-        prefabs.Clear();
-        // 清空主面板1列表
-        mainPanel1.Clear();
-        // 清空主面板2列表
-        mainPanel2.Clear();
-        // 清空需要禁用的子对象列表
-        disableChildrenList.Clear();
-        // 将按钮变量设置为 null，释放引用
-        buttons = null;
-    }
-
 
     private void dontDestroy()
     {
+#if UNITY_EDITOR
         // 将PlayerManager移回DontDestroyOnLoad场景 注意只有根对象才可以使用DontDestroyOnLoad方法
         PlayerManager.instance.GetComponent<RectTransform>().SetParent(null, false);
         DontDestroyOnLoad(PlayerManager.instance.gameObject);
@@ -562,6 +584,7 @@ public class BattleManager : Singleton<BattleManager>
         // 将对象池管理器移回DontDestroyOnLoad场景
         PoolManager.instance.transform.GetComponent<RectTransform>().SetParent(null, false);
         DontDestroyOnLoad(PoolManager.instance.gameObject);
+#endif
     }
 
     private IEnumerator WaitForPlayerInput()

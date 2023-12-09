@@ -449,10 +449,38 @@ public class ButtonCommandManager //面板交互核心，视情况进行优化
                         }
                     }
                 }
-
                 // 将面板的子对象添加到字典
-                battleManager.childrenDic.Add(panelObject.name, children);
-
+                var dict = battleManager.childrenDic;
+                //var list = new List<Dictionary<string, List<Transform>>>();
+                var list = new List<string>
+                {
+                    panelObject.name
+                };
+                //battleManager.childrenDic.Add(panelObject.name, children);
+                
+                foreach (var name in list)
+                {
+                    // 如果字典不包含该键
+                    if (!dict.ContainsKey(name))
+                    {
+                        // 字典为空则直接添加
+                        if (!dict.Any())
+                        {
+                            dict.Add(name, children);
+                        }
+                        // 字典不为空也添加
+                        else
+                        {
+                            dict.Add(name, children);
+                        }
+                    }
+                    else if (dict[name].Count == 0)
+                    {
+                        dict[name] = children;
+                    }
+                    
+                }
+                
                 // 如果存在滚动视图描述子对象，添加到列表中
                 if (scrollViewDescChildren.Any())
                 {

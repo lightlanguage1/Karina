@@ -81,14 +81,14 @@ public class Global : Singleton<Global>
     public float time;
 
     public TextMeshProUGUI timeText;
-    public LightShift lightShift;
-    private string morning;
-    private string night;
-    private int timer;
+    //public LightShift lightShift;
+    //private string morning;
+    //private string night;
+    //private int timer;
 
-    public delegate void switchLight(LightShift type);
+    //public delegate void switchLight(LightShift type);
 
-    public event switchLight onLightChange;
+    //public event switchLight onLightChange;
 
     [Header("SQLite数据库文件路径")]
     public string databasePath = "Data Source=Assets/StreamingAssets/Karryn";
@@ -131,14 +131,14 @@ public class Global : Singleton<Global>
         enemy_z = 0f;
         xuli = 50;
         playerData = new PlayerData();
-        duration = 15f;
-        inMainScene = false;
-        morning = "白天";
-        night = "夜晚";
-        timer = 0;
-        timeText.text = "白天";
-        timeText.text = "黑夜";
-        ////测试用例
+        //duration = 15f;
+        //inMainScene = false;
+       //morning = "白天";
+        //night = "夜晚";
+        //timer = 0;
+        //timeText.text = "白天";
+        //timeText.text = "黑夜";
+        //测试用例
         playerData = new PlayerData();
         playerData.name = "Karryn";
         playerData.x = 29f;
@@ -153,26 +153,26 @@ public class Global : Singleton<Global>
 
     private void Update()
     {
-        if (inMainScene)
-        {
-            time += Time.deltaTime / 5; // 将时间按5倍速度流逝
-            if (time >= 30) // 这里的30对应的是5分钟游戏时间（实际为30分钟现实时间）
-            {
-                if (timer >= 1) // 随意定的，可以适当调整
+        /*        if (inMainScene)
                 {
-                    timer = 0;
-                    timeText.text = morning;
-                    return;
-                }
-                timer++;
-                if (timer % 2 == 0) timeText.text = morning;
-                else if (timer % 2 == 1) timeText.text = night;
+                    time += Time.deltaTime / 5; // 将时间按5倍速度流逝
+                    if (time >= 30) // 这里的30对应的是5分钟游戏时间（实际为30分钟现实时间）
+                    {
+                        if (timer >= 1) // 随意定的，可以适当调整
+                        {
+                            timer = 0;
+                            timeText.text = morning;
+                            return;
+                        }
+                        timer++;
+                        if (timer % 2 == 0) timeText.text = morning;
+                        else if (timer % 2 == 1) timeText.text = night;
 
-                time -= 30; // 这里的30对应的是5分钟游戏时间（实际为30分钟现实时间）
-                lightShift = lightShift == LightShift.morning ? LightShift.night : LightShift.morning;
-                onLightChange?.Invoke(lightShift);
-            }
-        }
+                        time -= 30; // 这里的30对应的是5分钟游戏时间（实际为30分钟现实时间）
+                        lightShift = lightShift == LightShift.Morning ? LightShift.Night : LightShift.Morning;
+                        onLightChange?.Invoke(lightShift);
+                    }
+                }*/
     }
 
 }

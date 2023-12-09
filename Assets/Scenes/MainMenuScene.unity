@@ -3928,71 +3928,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1238218705}
   m_CullTransparentMesh: 1
---- !u!1001 &1328030630
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2222075083208175468, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: sceneLights.Array.size
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4809239212396372854, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_RootOrder
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 4809239212396372854, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -13.791197
-      objectReference: {fileID: 0}
-    - target: {fileID: 4809239212396372854, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -15.797203
-      objectReference: {fileID: 0}
-    - target: {fileID: 4809239212396372854, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -0.69254535
-      objectReference: {fileID: 0}
-    - target: {fileID: 4809239212396372854, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4809239212396372854, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4809239212396372854, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4809239212396372854, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4809239212396372854, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4809239212396372854, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4809239212396372854, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7774810298192674761, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
-      propertyPath: m_Name
-      value: Light Manager
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 21eec41e49f1f7d458d2488ca53df177, type: 3}
 --- !u!1 &1460734944
 GameObject:
   m_ObjectHideFlags: 0
@@ -6201,7 +6136,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 429423595030356865, guid: 8d6b2607202975f4e874f75d7f37847e, type: 3}
       propertyPath: m_RootOrder
-      value: 11
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 429423595030356865, guid: 8d6b2607202975f4e874f75d7f37847e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -6364,6 +6299,10 @@ PrefabInstance:
       propertyPath: nightText
       value: 
       objectReference: {fileID: 2878825763798012009, guid: 7c88795888793d145a7abcf5d8c12889, type: 3}
+    - target: {fileID: 6394026066084519333, guid: d5384fb2ec0569d44aa0aec4af25efd9, type: 3}
+      propertyPath: inMainScene
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6394026066084519333, guid: d5384fb2ec0569d44aa0aec4af25efd9, type: 3}
       propertyPath: playerData.name
       value: Karryn

@@ -1,32 +1,52 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "LightPattren", menuName = "Light/LightPattren")]
+[CreateAssetMenu(fileName = "LightPattern", menuName = "Light/LightPattern")]
 public class LightSwitch : ScriptableObject
 {
-    public List<LightDetails> lightDetailsl;
+    public List<LightDetails> lightDetails;
 
     /// <summary>
-    ///
+    /// 根据灯光转换类型获取对应的灯光细节信息
     /// </summary>
-    /// <param name="lightShift">灯光切换</param>
-    /// <returns></returns>
-    public LightDetails getLightDetails(LightShift lightShift)
+    /// <param name="lightShift">灯光切换类型</param>
+    /// <returns>对应的灯光细节信息</returns>
+    public LightDetails GetLightDetails(LightShift lightShift)
     {
-        return lightDetailsl.Find(l => l.lightShift == lightShift);    //找到脚本对象列表中符合该条件的元素
+        
+        LightDetails foundDetails = lightDetails.FirstOrDefault(l => l.lightShift.ToString().ToLower() == lightShift.ToString().ToLower());
+
+        return foundDetails;
     }
+
+
 }
 
-[System.Serializable]  //将该类标记为可以序列化or反序列化的
+
+// 标记为可序列化的灯光细节类
+[System.Serializable]
 public class LightDetails
 {
+    // 灯光转换类型
     public LightShift lightShift;
+
+    // 灯光颜色
     public Color lightColor;
+
+    // 灯光强度
     public float lightAmount;
+
 }
 
+
+// 定义灯光转换类型的枚举
 public enum LightShift
 {
     morning,
-    night
+    night,
+    midnight,
+    afternoon,
+    noon,
+    forenoon
 }

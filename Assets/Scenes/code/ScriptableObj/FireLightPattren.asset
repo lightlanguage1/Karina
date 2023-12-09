@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07c02e931a4e553428ee32c208918ea1, type: 3}
   m_Name: FireLightPattren
   m_EditorClassIdentifier: 
-  lightDetailsl:
+  lightDetails:
   - lightShift: 0
-    lightColor: {r: 1, g: 1, b: 1, a: 1}
-    lightAmount: 0
-  - lightShift: 1
-    lightColor: {r: 1, g: 0.7529412, b: 0.43137255, a: 1}
-    lightAmount: 1
+    lightColor: {r: 0.87058824, g: 0.78431374, b: 0.27450982, a: 1}
+    lightAmount: 0.7
+  - lightShift: 0
+    lightColor: {r: 0.8679245, g: 0.7808591, b: 0.27429688, a: 1}
+    lightAmount: 0.7
