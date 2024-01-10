@@ -20,8 +20,7 @@ public class GameTimeManager : MonoBehaviour
     public float duration;
 
     [SerializeField] private List<LightControl> sceneLights; // 保存场景中的所有灯光
-    private LightShift lightShift = LightShift.morning;
-
+    private LightShift lightShift = LightShift.Forenoon;
     public static GameTimeManager instance;
   
 
@@ -56,8 +55,10 @@ public class GameTimeManager : MonoBehaviour
         duration = 20f;
         // 初始化 sceneLights 列表
         sceneLights = new List<LightControl>();
-        instance = new GameTimeManager();
+        instance = this;  // 使用当前实例赋值给 instance
+        UpdateLights(LightShift.Forenoon);
     }
+
 
     private int currentPhase = 0;  // 用于追踪当前时间段
 
@@ -75,12 +76,8 @@ public class GameTimeManager : MonoBehaviour
                 if (timer >= 1)
                 {
                     timer = 1;
-                    timeText.text = "";
-                    UpdateOtherTexts(currentPhase);
-
-                    // 切换天气色调
-                    //ChangeWeatherColor(LightShift.Morning)
-
+                    timeText.text = "凌晨";
+                  
                     // 重置计时器和天数
                     ResetTimerAndDay();
 
@@ -91,7 +88,7 @@ public class GameTimeManager : MonoBehaviour
 
                 time -= 4320;
             }
-
+            UpdateOtherTexts(currentPhase);
             // 设置计时器和时间段
             SetTimerAndPhase();
             // 更新时钟 UI
@@ -100,7 +97,7 @@ public class GameTimeManager : MonoBehaviour
         }
     }
 
-    private void UpdateLights()
+    private void UpdateLights(LightShift lightShift)
     {
         // 清空之前保存的灯光控件列表
         sceneLights.Clear();
@@ -114,49 +111,49 @@ public class GameTimeManager : MonoBehaviour
     }
 
     // 设置计时器和时间段
+
     private void SetTimerAndPhase()
     {
         if (time >= 720 && time < 1440)
         {
             timer = 1;
             currentPhase = 1;
-            UpdateLights();
+            UpdateLights(LightShift.Forenoon);
         }
         else if (time >= 1440 && time < 2160)
         {
             timer = 2;
             currentPhase = 2;
-            UpdateLights();
+            UpdateLights(LightShift.Morning);
         }
         else if (time >= 2160 && time < 2880)
         {
             timer = 3;
             currentPhase = 3;
-            UpdateLights();
+            UpdateLights(LightShift.Noon);
         }
         else if (time >= 2880 && time < 3600)
         {
             timer = 4;
             currentPhase = 4;
-            UpdateLights();
+            UpdateLights(LightShift.Afternoon);
         }
         else if (time >= 3600 && time < 4320)
         {
             timer = 5;
             currentPhase = 5;
-            UpdateLights();
+            UpdateLights(LightShift.Night);
         }
-        else if (time >= 4230)
+        else if (time >= 4320)
         {
             timer = 6;
             currentPhase = 6;
-            UpdateLights();
+            UpdateLights(LightShift.Midnight);
             // 天数加一，重置计时器
             IncrementDay();
             ResetTimerAndDay();
         }
     }
-
 
     private void UpdateOtherTexts(int currentPhase)
     {
@@ -185,7 +182,7 @@ public class GameTimeManager : MonoBehaviour
                 timeText.text = "凌晨";
                 break;
         }
-        Debug.Log("Text updated: " + timeText.text); // 添加这行进行调试
+        //Debug.Log("Text updated: " + timeText.text); // 添加这行进行调试
     }
 
     // 重置计时器和天数

@@ -36202,6 +36202,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Post  Process
       objectReference: {fileID: 0}
+    - target: {fileID: 8195666596777518834, guid: 5c8acac4a3aab3c47816165cec3071d4, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

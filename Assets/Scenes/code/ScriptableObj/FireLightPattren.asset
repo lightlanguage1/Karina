@@ -16,6 +16,18 @@ MonoBehaviour:
   - lightShift: 0
     lightColor: {r: 0.87058824, g: 0.78431374, b: 0.27450982, a: 1}
     lightAmount: 0.7
-  - lightShift: 0
+  - lightShift: 1
+    lightColor: {r: 0.8679245, g: 0.7808591, b: 0.27429688, a: 1}
+    lightAmount: 0.7
+  - lightShift: 2
+    lightColor: {r: 0.8679245, g: 0.7808591, b: 0.27429688, a: 1}
+    lightAmount: 0.7
+  - lightShift: 3
+    lightColor: {r: 0.8679245, g: 0.7808591, b: 0.27429688, a: 1}
+    lightAmount: 0.7
+  - lightShift: 4
+    lightColor: {r: 0.8679245, g: 0.7808591, b: 0.27429688, a: 1}
+    lightAmount: 0.7
+  - lightShift: 5
     lightColor: {r: 0.8679245, g: 0.7808591, b: 0.27429688, a: 1}
     lightAmount: 0.7

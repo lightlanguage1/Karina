@@ -19,8 +19,11 @@ public class LightControl : MonoBehaviour
     {
         // 获取指定灯光转换类型的灯光细节信息
         curlightDetails = lightSwitch.GetLightDetails(lightShift);
+
+
         // 通过动画补间插件实现灯光颜色和强度的平滑过渡效果
-        DOTween.To(() => curLight.color, c => curLight.color = c, curlightDetails.lightColor, GameTimeManager.instance.duration);
-        DOTween.To(() => curLight.intensity, c => curLight.intensity = c, curlightDetails.lightAmount, GameTimeManager.instance.duration);
+        DG.Tweening.Core.TweenerCore<Color, Color, DG.Tweening.Plugins.Options.ColorOptions> tweenerCore = DOTween.To(() => curLight.color, c => curLight.color = c, curlightDetails.lightColor, GameTimeManager.instance.duration);
+        DG.Tweening.Core.TweenerCore<float, float, DG.Tweening.Plugins.Options.FloatOptions> tweenerCore1 = DOTween.To(() => curLight.intensity, c => curLight.intensity = c, curlightDetails.lightAmount, GameTimeManager.instance.duration);
     }
+
 }

@@ -59,7 +59,7 @@ public class Global : Singleton<Global>
     public float enemy_z;
 
     [Header("已阵亡的敌人列表")]
-    public Dictionary<string,GameObject> diedDic;   //先死的先刷新，后死的后刷新
+    public Dictionary<string, GameObject> diedDic;   //先死的先刷新，后死的后刷新
 
     //[Header("敌人的初始位置字典")]
     public Dictionary<string, Vector3> posDic;  //这个位置是要从数据库里面读出来的
@@ -81,14 +81,14 @@ public class Global : Singleton<Global>
     public float time;
 
     public TextMeshProUGUI timeText;
-    //public LightShift lightShift;
-    //private string morning;
-    //private string night;
-    //private int timer;
+    public LightShift lightShift;
+    private string morning;
+    private string night;
+    private int timer;
 
-    //public delegate void switchLight(LightShift type);
+    public delegate void switchLight(LightShift type);
 
-    //public event switchLight onLightChange;
+    public event switchLight onLightChange;
 
     [Header("SQLite数据库文件路径")]
     public string databasePath = "Data Source=Assets/StreamingAssets/Karryn";
@@ -131,53 +131,25 @@ public class Global : Singleton<Global>
         enemy_z = 0f;
         xuli = 50;
         playerData = new PlayerData();
-        //duration = 15f;
-        //inMainScene = false;
-       //morning = "白天";
-        //night = "夜晚";
-        //timer = 0;
-        //timeText.text = "白天";
-        //timeText.text = "黑夜";
-        //测试用例
+        duration = 15f;
+        inMainScene = false;
+        ////测试用例
         playerData = new PlayerData();
         playerData.name = "Karryn";
-        playerData.x = 29f;
-        playerData.y = -33f;
+        playerData.x = -8.18f;
+        playerData.y = -18.44f;
         playerData.z = 0f;
         playerData.sexVal = 0;
-        playerData.money = 1000;
-        playerData.dateTime = "";
         playerData.num = 0;
         playerData.level = 1;
     }
 
     private void Update()
     {
-        /*        if (inMainScene)
-                {
-                    time += Time.deltaTime / 5; // 将时间按5倍速度流逝
-                    if (time >= 30) // 这里的30对应的是5分钟游戏时间（实际为30分钟现实时间）
-                    {
-                        if (timer >= 1) // 随意定的，可以适当调整
-                        {
-                            timer = 0;
-                            timeText.text = morning;
-                            return;
-                        }
-                        timer++;
-                        if (timer % 2 == 0) timeText.text = morning;
-                        else if (timer % 2 == 1) timeText.text = night;
-
-                        time -= 30; // 这里的30对应的是5分钟游戏时间（实际为30分钟现实时间）
-                        lightShift = lightShift == LightShift.Morning ? LightShift.Night : LightShift.Morning;
-                        onLightChange?.Invoke(lightShift);
-                    }
-                }*/
     }
-
 }
 
-[System.Serializable]
+    [System.Serializable]
 public class PlayerData
 {
     public int num; //存档位编号

@@ -108,20 +108,20 @@ public class switchAttackSkillPanelCommand : Icommand  //攻击面板
         openSkillPanel(ChildrenType.AtkSkillPanel);
     }
 
-        public void openSkillPanel(ChildrenType type)
-        {
-            BattleManager battleManager = BattleManager.instance;
-            GameObject frame = BattleManager.instance.canvas.transform.GetChild((int)ChildrenType.SelectFrame).gameObject;
-            GameObject cursor = BattleManager.instance.canvas.transform.GetChild((int)ChildrenType.FrameCursor).gameObject;
-            frame.SetActive(false);
-            cursor.SetActive(false);
-            battleManager.canvas.transform.GetChild((int)type).gameObject.SetActive(true);
+    public void openSkillPanel(ChildrenType type)
+    {
+        BattleManager battleManager = BattleManager.instance;
+        GameObject frame = BattleManager.instance.canvas.transform.GetChild((int)ChildrenType.SelectFrame).gameObject;
+        GameObject cursor = BattleManager.instance.canvas.transform.GetChild((int)ChildrenType.FrameCursor).gameObject;
+        frame.SetActive(false);
+        cursor.SetActive(false);
+        battleManager.canvas.transform.GetChild((int)type).gameObject.SetActive(true);
 
-            string foucsName = battleManager.curPanel.transform.GetChild((int)panelInChildType.Focus).name;
-            battleManager.animDic[foucsName].Play("focus");
-            battleManager.isPanel = true;
-        }
+        string foucsName = battleManager.curPanel.transform.GetChild((int)panelInChildType.Focus).name;
+        battleManager.animDic[foucsName].Play("focus");
+        battleManager.isPanel = true;
     }
+}
 
 public class attackButtonCommand : Icommand //攻击按钮
 {
@@ -319,7 +319,7 @@ public class specialsexskillButtonCommand : Icommand//新加的面板逻辑未完成，面板
     public void execute()
     {
         // 隐藏其他面板，显示 SpiritualSkillPanel2
-        BattleManager battleManager = BattleManager.instance;;
+        BattleManager battleManager = BattleManager.instance; ;
 
         // 停止一些协程
         battleManager.StopCoroutine(battleManager.corSwitchOtherButton);
@@ -343,8 +343,8 @@ public class specialsexskillButtonCommand : Icommand//新加的面板逻辑未完成，面板
 
         // 设置 isPanel 为 true
         battleManager.isPanel = true;
-         }
     }
+}
 
 
 public class SexSkillPanelCommand : Icommand//新加的面板逻辑未完成，面板内按钮交互逻辑
@@ -370,7 +370,7 @@ public class SexSkillPanelCommand : Icommand//新加的面板逻辑未完成，面板内按钮交
 
         // 播放 "focus" 动画
         string foucsName = battleManager.curPanel.transform.GetChild((int)panelInChildType.Focus).name;
-       
+
 
         battleManager.animDic[foucsName].Play("focus");
 
@@ -457,7 +457,7 @@ public class ButtonCommandManager //面板交互核心，视情况进行优化
                     panelObject.name
                 };
                 //battleManager.childrenDic.Add(panelObject.name, children);
-                
+
                 foreach (var name in list)
                 {
                     // 如果字典不包含该键
@@ -478,9 +478,9 @@ public class ButtonCommandManager //面板交互核心，视情况进行优化
                     {
                         dict[name] = children;
                     }
-                    
+
                 }
-                
+
                 // 如果存在滚动视图描述子对象，添加到列表中
                 if (scrollViewDescChildren.Any())
                 {
@@ -597,7 +597,7 @@ public class ButtonCommandManager //面板交互核心，视情况进行优化
         }
 
         // 未找到匹配的按钮或面板命令
-       // Debug.LogError($"未找到按钮或面板命令：ButtonName: {buttonName}, PanelName: {panelName}");
+        // Debug.LogError($"未找到按钮或面板命令：ButtonName: {buttonName}, PanelName: {panelName}");
     }
 
     // 尝试执行命令，并返回是否成功

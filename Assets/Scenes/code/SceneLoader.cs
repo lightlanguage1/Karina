@@ -42,12 +42,10 @@ public class SceneLoader : Singleton<SceneLoader>
 
     private void OnEnable()
     {
-        SceneManager.activeSceneChanged += onSceneChanged;
-        SceneManager.sceneLoaded += checkLoadedScene;
-        SceneManager.sceneUnloaded += onSceneUnloaded;
+        SceneManager.activeSceneChanged += onSceneChanged;   //为事件注册回调函数，场景切换时调用
+        SceneManager.sceneLoaded += checkLoadedScene;   //场景加载完成后触发该事件
+        SceneManager.sceneUnloaded += onSceneUnloaded;  //当场景被卸载时触发该事件
     }
-
-
 
     private void onSceneUnloaded(Scene scene)
     {
@@ -64,47 +62,47 @@ public class SceneLoader : Singleton<SceneLoader>
         }
     }
 
-        private void checkLoadedScene(Scene scene, LoadSceneMode mode)  //Scene scene它包含有关已加载场景的信息，例如场景的名称、路径和根游戏对象。
+    private void checkLoadedScene(Scene scene, LoadSceneMode mode)  //Scene scene它包含有关已加载场景的信息，例如场景的名称、路径和根游戏对象。
+    {
+        //获取加载的主场景名字
+        if (scene.name == "main1L")
         {
-            //获取加载的主场景名字
-            if (scene.name == "main1L")
-            {
-                Global.instance.curMainSceneName = scene.name;
-                //GameTimeManager.instance.curMainSceneName = scene.name;
-                //Global.instance.loadResource(scene.name);
-            }
+            Global.instance.curMainSceneName = scene.name;
+            Global.instance.inMainScene = true;
+            //Global.instance.loadResource(scene.name);
+        }
 
-            //遇敌但没死，说明前一个场景是战斗场景并且胜利了,因此要将该敌人禁用
-            if (scene.name == "main1L" && Global.instance.isWin)
+        //遇敌但没死，说明前一个场景是战斗场景并且胜利了,因此要将该敌人禁用
+        if (scene.name == "main1L" && Global.instance.isWin)
+        {
+            Global.instance.isWin = false;
+            //加入敌人阵亡队列,方便刷新
+            NPC[] npcs = FindObjectsByType<NPC>(FindObjectsSortMode.None);
+            for (int i = 0; i < npcs.Length; i++)
             {
-                Global.instance.isWin = false;
-                //加入敌人阵亡队列,方便刷新
-                NPC[] npcs = FindObjectsByType<NPC>(FindObjectsSortMode.None);
-                for (int i = 0; i < npcs.Length; i++)
+                if (npcs[i].name == Global.instance.battlePrevNpcName) 
                 {
-                    if (npcs[i].name == Global.instance.battlePrevNpcName) 
-                    {
-                        Global.instance.diedDic.Add(npcs[i].name, npcs[i].gameObject);
-                    }
-                    if(Global.instance.diedDic.ContainsKey(npcs[i].name))
-                    {
-                        npcs[i].gameObject.SetActive(false);
-                        Global.instance.diedDic[npcs[i].name].gameObject.SetActive(false);  //同步修改字典中的敌人活跃状态
-                    }
+                    Global.instance.diedDic.Add(npcs[i].name, npcs[i].gameObject);
+                }
+                if(Global.instance.diedDic.ContainsKey(npcs[i].name))
+                {
+                    npcs[i].gameObject.SetActive(false);
+                    Global.instance.diedDic[npcs[i].name].gameObject.SetActive(false);  //同步修改字典中的敌人活跃状态
                 }
             }
+        }
 
-            if (scene.name == "BattleScene")
-            {
+        if (scene.name == "BattleScene")
+        {
             GameObject.FindFirstObjectByType<BattleManager>().loadResource();   //加载相关资源
             GameObject.FindFirstObjectByType<PlayerManager>().loadResource();
-            //GameTimeManager.instance.inMainScene = false;
-            }
-            else
-            {
-                GameObject.FindFirstObjectByType<PlayerManager>().releaseResource();
-            }
+            Global.instance.inMainScene = false;
         }
+        else
+        {
+            GameObject.FindFirstObjectByType<PlayerManager>().releaseResource();
+        }
+    }
 
     private IEnumerator loadScneneByTransition(int sceneVal)
     {
@@ -182,14 +180,14 @@ public class SceneLoader : Singleton<SceneLoader>
 
         SpriteRenderer spriteRenderer = spriteObj.AddComponent<SpriteRenderer>();
         Sprite sprite = Sprite.Create(screenShot, new Rect(0, 0, screenShot.width, screenShot.height), new Vector3(0.5f, 0.5f, 0f));
-/*#if DEBUG
+#if DEBUG
 
         Debug.Log("Sprite size: " + spriteRenderer.bounds.size);
         Debug.Log("sprite size:" + sprite.textureRect.size.ToString());
-#endif*/
+#endif
         spriteRenderer.sprite = sprite;
         spriteRenderer.material = transitionMaterial;
-        spriteRenderer.sortingOrder = 999; //确保渲染在最前面
+        spriteRenderer.sortingOrder = 9999; //确保渲染在最前面
 
         spriteObj.transform.position = mainCamera.transform.position;
 
@@ -200,6 +198,7 @@ public class SceneLoader : Singleton<SceneLoader>
 
             transitionMaterial.SetFloat("_TransitionProgress", weight);
             float val = transitionMaterial.GetFloat("_TransitionProgress");
+            //Debug.Log(val);
             yield return null;
         }
 
@@ -219,10 +218,10 @@ public class SceneLoader : Singleton<SceneLoader>
         screenShot.ReadPixels(new Rect(0, 0, width, height), 0, 0); //0,0 代表屏幕坐标原点，即屏幕的左下角
         screenShot.Apply(); //应用读到的像素数据
 
-/*#if DEBUG
+#if DEBUG
         Debug.Log("width:" + width.ToString() + "  " + "height:" + height.ToString());
         Debug.Log("screenShot width:" + screenShot.width.ToString() + "screenShot height:" + screenShot.height.ToString());
-#endif*/
+#endif
     }
 
     public void loadGameScene(int sceneVal)

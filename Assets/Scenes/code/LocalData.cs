@@ -55,7 +55,7 @@ public class LocalData : MonoBehaviour
         //玩家相关 保存到本地
         DateTime curDateTime = DateTime.Now;
         string formatTime = curDateTime.ToString("yyyy-MM-dd hh:mm:ss");
-        Global.instance.playerData.dateTime = formatTime;
+        //Global.instance.playerData.dateTime = formatTime;
         Global.instance.playerData.num = num;
         Global.instance.playerData.level = PlayerManager.instance.level;
         Global.instance.playerData.sexVal = (int)PlayerManager.instance.curHappyVal;

@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 07c02e931a4e553428ee32c208918ea1, type: 3}
-  m_Name: LightPattren
+  m_Name: FireLightPattren2
   m_EditorClassIdentifier: 
   lightDetails:
   - lightShift: 0
-    lightColor: {r: 0.9150944, g: 0.7075472, b: 0.9433962, a: 1}
-    lightAmount: 0.5
+    lightColor: {r: 1, g: 0.7058824, b: 0.9960785, a: 1}
+    lightAmount: 0.7
   - lightShift: 1
-    lightColor: {r: 1, g: 1, b: 1, a: 1}
-    lightAmount: 0.6
+    lightColor: {r: 1, g: 0.7058824, b: 0.99607843, a: 1}
+    lightAmount: 0.7
   - lightShift: 2
-    lightColor: {r: 1, g: 1, b: 1, a: 1}
-    lightAmount: 0.9
+    lightColor: {r: 1, g: 0.7058824, b: 0.99607843, a: 1}
+    lightAmount: 0.7
   - lightShift: 3
-    lightColor: {r: 0.729228, g: 0.745283, b: 0.23553754, a: 1}
-    lightAmount: 0.6
+    lightColor: {r: 1, g: 0.7058824, b: 0.99607843, a: 1}
+    lightAmount: 0.7
   - lightShift: 4
-    lightColor: {r: 0.21586867, g: 0.21586867, b: 0.31132078, a: 1}
-    lightAmount: 0.5
+    lightColor: {r: 1, g: 0.7058824, b: 0.99607843, a: 1}
+    lightAmount: 0.7
   - lightShift: 5
-    lightColor: {r: 0.084905684, g: 0.07489322, b: 0.08093996, a: 1}
-    lightAmount: 0.5
+    lightColor: {r: 1, g: 0.7058824, b: 0.99607843, a: 1}
+    lightAmount: 0.7

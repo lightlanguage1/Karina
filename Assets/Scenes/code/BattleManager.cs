@@ -6,7 +6,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using static Unity.VisualScripting.Metadata;
 
 public class BattleManager : Singleton<BattleManager>
 {
@@ -244,8 +243,6 @@ public class BattleManager : Singleton<BattleManager>
 
     }
 
-
-
     public void loadResource()
     {
 
@@ -315,11 +312,8 @@ public class BattleManager : Singleton<BattleManager>
             if (curButton.gameObject.name == "run")  // 检查按钮是否为“run”按钮
             {
                 // 执行逃跑/退出逻辑
-                //StartCoroutine(RunAway());\
-                BattleManager battleManager = BattleManager.instance;
-                battleManager.childrenDic = new Dictionary<string, List<Transform>>();
-                CheckBattleEndCondition("taopao");
-               
+                StartCoroutine(RunAway());
+
             }
             else
             {
@@ -340,7 +334,7 @@ public class BattleManager : Singleton<BattleManager>
     private IEnumerator RunAway()
     {
         Debug.Log("玩家选择逃跑！");
-        
+
         //previousScene = SceneManager.GetActiveScene().name;
         // 播放逃跑动画
         //animDic["Karryn"].SetTrigger("RunAwayAnimation");
@@ -348,27 +342,17 @@ public class BattleManager : Singleton<BattleManager>
         // 显示逃跑提示信息
         //UIManager.instance.ShowText("逃跑成功！");
 
-
+        BattleManager battleManager = BattleManager.instance;
+        battleManager.childrenDic = new Dictionary<string, List<Transform>>();
+        CheckBattleEndCondition("taopao");
 
         // 等待一段时间，模拟逃跑后的处理
         yield return new WaitForSeconds(0.5f);
 
         // 结束战斗，清空和初始化
         ReleaseResource();
-
-        // 切换到逃跑后的场景
-        SceneLoader.instance.loadGameScene((int)SceneEnumVal.Main1L);
-        //SceneManager.LoadScene(previousScene);
-        // 初始化敌人
-        //InitializeRound();
     }
 
-    private void InitializeRound()
-    {
-        // 清空资源
-        ReleaseResource();
-        // 其他初始化逻辑，根据需要添加
-    }
     private void ReleaseResource()
     {
         // 清空动画字典
@@ -385,8 +369,8 @@ public class BattleManager : Singleton<BattleManager>
         disableChildrenList.Clear();
         // 将按钮变量设置为 null，释放引用
 
-        BattleManager battleManager = BattleManager.instance;
-        battleManager.childrenDic.Clear();
+        //BattleManager battleManager = BattleManager.instance;
+        //battleManager.childrenDic.Clear();
         buttons = null;
     }
 
@@ -407,11 +391,19 @@ public class BattleManager : Singleton<BattleManager>
             StartCoroutine(lightDissolution());
             return true;
         }
-        else if (prefabs.Count == 0 ||!string.IsNullOrEmpty(taopa))       //胜利敌人全部被消灭
+        else if (prefabs.Count == 0) //胜利敌人全部被消灭
         {
-            
+            Global.instance.isWin = true;  // 设置全局变量表示胜利
+            StopAllCoroutines();           // 停止所有协程
+            dontDestroy();                 // 不销毁对象
+            SceneLoader.instance.loadGameScene((int)SceneEnumVal.Main1L);  // 加载主场景
+            ReleaseResource();             // 释放资源
+            return false;                  // 返回false表示战斗继续进行
+        }
+        else if (prefabs.Count == 0 || !string.IsNullOrEmpty(taopa))//逃跑
+        {
             Global.instance.isWin = true;
-            //ReleaseResource();
+            ReleaseResource();
             StopAllCoroutines();
             dontDestroy();
             SceneLoader.instance.loadGameScene((int)SceneEnumVal.Main1L);
@@ -461,7 +453,7 @@ public class BattleManager : Singleton<BattleManager>
             }
         }
     }
-    //private string previousScene;
+  
     public IEnumerator PrepareRound()
     {
 #if UNITY_EDITOR
@@ -477,7 +469,7 @@ public class BattleManager : Singleton<BattleManager>
             {
                 if (!Global.instance.isClear1L) // 一层未通关
                 {
-                    int enemySize = UnityEngine.Random.Range(1, 6);
+                    int enemySize = UnityEngine.Random.Range(6, 6);
                     int[] values = { goblinIndex, goblinIndex };
 
                     if (Global.instance.battlePrevNpcName.Contains("goblin"))

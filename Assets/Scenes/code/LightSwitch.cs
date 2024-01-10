@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,13 +15,10 @@ public class LightSwitch : ScriptableObject
     /// <returns>对应的灯光细节信息</returns>
     public LightDetails GetLightDetails(LightShift lightShift)
     {
-        
-        LightDetails foundDetails = lightDetails.FirstOrDefault(l => l.lightShift.ToString().ToLower() == lightShift.ToString().ToLower());
+        LightDetails foundDetails = lightDetails.FirstOrDefault(l => string.Equals(l.lightShift.ToString(), lightShift.ToString(), StringComparison.OrdinalIgnoreCase));
 
         return foundDetails;
     }
-
-
 }
 
 
@@ -43,10 +41,10 @@ public class LightDetails
 // 定义灯光转换类型的枚举
 public enum LightShift
 {
-    morning,
-    night,
-    midnight,
-    afternoon,
-    noon,
-    forenoon
+    Forenoon, //上午（早晨）
+    Morning,// 早晨
+    Noon,//中午
+    Afternoon,// 下午
+    Night,//晚上
+    Midnight, //午夜（深夜）
 }
